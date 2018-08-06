@@ -1,0 +1,286 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Real-Time HTML, CSS, JS</title>
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <!-----APIs and Libraries------->
+        
+        <!-- jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <!-- Fallback to local jQuery if Google CDN fails -->
+        <script>
+            window.jQuery || document.write('<script src="jquery-3.3.1.min.js"><\/script>');
+        </script>
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css?family=Molengo|Raleway:800" rel="stylesheet">
+        
+
+        <!-----CSS------->
+        <style type="text/css">
+            
+            /* CSS variables */
+            :root {
+                --topBar-height:50px;
+            }
+            body {
+                margin:0;
+                padding:0;
+            }
+            .clear {
+                clear:both; 
+            }
+            #topBar {
+                height:var(--topBar-height);
+                box-sizing:border-box;
+                padding:10px;
+                background-color:#E8D9EE;
+                border-bottom:1px #B7B7B7 solid;
+            }
+            #logo {
+                float:left;
+                color:#4c4c4c;
+                font-family:'Raleway', sans-serif;
+                font-size:20px;
+                /*This is a good way to center text vertically within a div: */
+                position: relative;
+                top:50%;
+                transform: translateY(-50%);
+            }
+            #buttons {
+                height:30px;
+                width:188px;
+                margin:auto;
+
+            }
+            button {
+                height:30px;
+                margin:0px;
+                float:left;
+                font-family:'Molengo', sans-serif;
+                background-color:#a6a7a8;
+            }
+            button:hover {
+                background-color:#c1c1c1;
+            }
+            /* Removes blue border */
+            button:focus {
+                outline:none;
+            }
+            .bSelected {
+                background-color:#E1E1E1;
+            }
+            .bSelected:hover {
+                background-color:#EAEAEA;
+            }
+            
+            #bHtml {
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px; 
+            }
+            #bCss {
+                border-radius: 1px;
+            }
+            #bJavascript {
+                border-radius: 1px;
+            }
+            #bOutput {
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+            .window {
+                box-sizing:border-box; /*This includes the border width in the size percentage of the box */
+                width:25%;
+                height: calc(100vh - 51px); /*I could just do 100vh, but then there would be a scroll bar >_< */
+                border-right: 1px #B7B7B7 solid;
+                float:left;
+            }
+            .title {
+                box-sizing:border-box;
+                padding:10px;
+                text-align:center;
+                font-family:'Molengo', sans-serif;
+            }
+            textarea {
+                box-sizing:border-box;
+                padding:5px;
+                width:100%;
+                border:none;
+                resize:none;
+            }
+            /* Removes blue border */
+            textarea:focus {
+                box-sizing:border-box;
+                outline:none;
+            }
+            iframe {
+                box-sizing:border-box;
+                width:100%;
+                border:none;
+            }
+            img {
+                display:none;
+            }
+        </style>
+    </head>
+
+    
+    <!-----HTML------->
+    <body>
+        <div id="topBar">
+            <div id="logo">Real-Time Code</div>
+            <div id="buttons">
+                <button class="bSelected" id="bHtml">HTML</button>
+                <button class="bSelected" id="bCss">CSS</button>
+                <button class="bSelected" id="bJavascript">JavaScript</button>
+                <button class="bSelected" id="bOutput">Output</button>
+            </div>
+        </div>
+        <div class="window" id="html">
+            <div class="title">HTML</div>
+            <textarea id="htmlPanel"></textarea>
+        </div>
+        <div class="window" id="css">
+            <div class="title">CSS</div>
+            <textarea id="cssPanel"></textarea>
+        </div>
+        <div class="window" id="javascript">
+            <div class="title">JavaScript</div>
+            <textarea id="javascriptPanel"></textarea>
+        </div>
+        <div class="window" id="output">
+            <div class="title">Output</div>
+            <!-- Only allowing iFrame certain privileges to reduce risk of user running malicious scripts -->
+            <iframe sandbox="allow-scripts allow-same-origin allow-modals" id="outputPanel" name="outputPanel"></iframe>
+        </div>
+        <div class="clear"></div>
+        <img src="bummer.jpeg">
+    
+        <!-- Javascript -->
+        <script type="text/javascript">
+
+
+            //-----Main-----
+
+            //Set proper textarea height
+            //This needs to be done in Javascript because it calculates this number based on other variables? I guess
+            //I don't understand why the extra 18 pixels is needed :(
+            //All three of these objects have box-sizing:border-box, so why is the padding not being included in the height of these objects? I know for a fact it's not being included in .title by writing it out to the console
+            $("textarea").height( $(".window").height() - $(".title").height() - 40);
+            $("iframe").height( $(".window").height() - $(".title").height() - 40);
+
+            //Button click events
+            $("#bHtml").click( function() { toggleWindow("#html","#bHtml"); });
+            $("#bCss").click( function() { toggleWindow("#css","#bCss"); });
+            $("#bJavascript").click( function() { toggleWindow("#javascript","#bJavascript"); });
+            $("#bOutput").click( function() { toggleWindow("#output","#bOutput"); });
+
+
+
+            //Build vars for dynamically changing CSS / JS
+            var style = document.createElement("style");
+            style.type = "text/css";
+            var styleExists = false;
+
+            var scr = document.createElement("script");
+            scr.type = "text/javascript";
+            var scriptExists = false;
+
+
+            //Apply HTML on key press
+            $("#htmlPanel").keyup(function() {
+
+                //This opens the iFrame contents, finds the <html> tag, and changes the html contents of all of that to what's in my #htmlPanel
+                $("iframe").contents().find("html").html( $(this).val() );
+
+                //Add back in any CSS and JS changes we've made
+                $("iframe").contents().find("head").append(style);
+                $("iframe").contents().find("body").append(scr);
+
+                //Debugging
+                //console.log($("iframe").contents().find("html").html());
+            });
+
+
+            //Apply CSS on key press
+            $("#cssPanel").keyup(function() {
+
+                style.innerHTML = $(this).val();
+
+                //Remove any existing style tag to avoid duplicates
+                if (!styleExists) { styleExists = true; }
+                else { $("iframe").contents().find("style").remove(); }
+
+                //Append new style element to the header
+                $("iframe").contents().find("head").append(style);
+
+                //Debugging
+                //console.log($("iframe").contents().find("html").html());
+            });
+
+
+            //Apply JavaScript on key press
+            $("#javascriptPanel").keyup(function() {
+
+                scr.innerHTML = $("#javascriptPanel").val();
+                
+                //Remove any existing script tag to avoid duplicates
+                if (!scriptExists) { scriptExists = true; }
+                else { $("iframe").contents().find("script").remove(); }
+                
+                //Append new script element to the body
+                $("iframe").contents().find("body").append(scr);
+                
+                //Potential but untested approach, which would be less expensive, because it replaces contents of <script> tag instead of removing/re-appending <script> tag each time:
+                //document.getElementById("outputPanel").contentWindow.eval($(this).val());
+
+                //Debugging
+                //console.log($("iframe").contents().find("html").html());
+            });
+            //-----End Main-----
+
+
+
+            //-----Additional Functions-----
+            function toggleWindow(window,button) {
+                $(button).toggleClass("bSelected")
+                $(window).toggle();
+
+                //Resize existing windows
+                var visibleWindows = $(".bSelected").length; //# of buttons in bSelected class
+                
+                //If all windows are gone, no point in resizing them. This also saves us from dividing by zero
+                if (visibleWindows > 0) {
+                    var windWidth = (100/visibleWindows) + "%"
+                    $(".window").css("width",windWidth);
+                }
+                
+                //Toggle easter egg picture
+                if (visibleWindows==0) {
+                    $("img").css("display","block");
+                } else {
+                    $("img").css("display","none");
+                }
+            }
+
+        </script>
+    </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
