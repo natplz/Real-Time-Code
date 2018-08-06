@@ -165,9 +165,6 @@
             //-----Main-----
 
             //Set proper textarea height
-            //This needs to be done in Javascript because it calculates this number based on other variables? I guess
-            //I don't understand why the extra 18 pixels is needed :(
-            //All three of these objects have box-sizing:border-box, so why is the padding not being included in the height of these objects? I know for a fact it's not being included in .title by writing it out to the console
             $("textarea").height( $(".window").height() - $(".title").height() - 40);
             $("iframe").height( $(".window").height() - $(".title").height() - 40);
 
